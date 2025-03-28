@@ -1,0 +1,61 @@
+```python
+import unittest
+from hotel_management import Guest, Room, Booking, Invoice, Payment
+
+class TestHotelManagement(unittest.TestCase):
+    def setUp(self):
+        """Initialize sample data for testing"""
+        self.guest1 = Guest("John Doe", "john@example.com", "1234567890")
+        self.guest2 = Guest("Jane Smith", "jane@example.com", "0987654321")
+        
+        self.room1 = Room(101, "Single", ["Wi-Fi", "TV"], 100)
+        self.room2 = Room(102, "Double", ["Wi-Fi", "TV", "Mini-bar"], 150)
+        
+        self.booking1 = Booking(self.guest1, self.room1, "2025-03-10", "2025-03-15")
+        self.booking2 = Booking(self.guest2, self.room2, "2025-04-01", "2025-04-05")
+        
+        self.invoice1 = Invoice(self.booking1)
+        self.payment1 = Payment(self.invoice1, "Credit Card")
+    
+    def test_guest_account_creation(self):
+        """Test guest creation and data storage"""
+        self.assertEqual(self.guest1.name, "John Doe")
+        self.assertEqual(self.guest1.email, "john@example.com")
+    
+    def test_search_available_rooms(self):
+        """Test searching for available rooms"""
+        available_rooms = [self.room1, self.room2]
+        self.assertIn(self.room1, available_rooms)
+        self.assertIn(self.room2, available_rooms)
+    
+    def test_make_room_reservation(self):
+        """Test room reservation process"""
+        self.assertEqual(self.booking1.guest, self.guest1)
+        self.assertEqual(self.booking1.room, self.room1)
+    
+    def test_booking_confirmation_notification(self):
+        """Test that guests receive confirmation"""
+        self.assertTrue(self.booking1.confirmation_sent)
+    
+    def test_invoice_generation(self):
+        """Test accurate invoice generation"""
+        expected_amount = 5 * 100  # 5 nights at $100 per night
+        self.assertEqual(self.invoice1.total_amount, expected_amount)
+    
+    def test_payment_processing(self):
+        """Test payment processing"""
+        self.assertTrue(self.payment1.process_payment())
+    
+    def test_reservation_history_display(self):
+        """Test displaying guest reservation history"""
+        self.guest1.add_booking(self.booking1)
+        self.assertIn(self.booking1, self.guest1.reservation_history)
+    
+    def test_reservation_cancellation(self):
+        """Test cancellation of a reservation"""
+        self.booking1.cancel()
+        self.assertEqual(self.room1.is_available, True)
+    
+if __name__ == "__main__":
+    unittest.main()
+```
