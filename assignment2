@@ -1,0 +1,122 @@
+class Guest:
+    """Represents a hotel guest."""
+    def __init__(self, name, contact, email):
+        self._name = name
+        self._contact = contact
+        self._email = email
+        self._bookings = []  # Aggregation: A guest can have multiple bookings
+    
+    def add_booking(self, booking):
+        self._bookings.append(booking)
+    
+    def get_details(self):
+        return f"Guest: {self._name}, Contact: {self._contact}, Email: {self._email}"
+
+    def __str__(self):
+        return self.get_details()
+
+
+class LoyaltyGuest(Guest):
+    """Represents a guest with a loyalty program."""
+    def __init__(self, name, contact, email, points=0):
+        super().__init__(name, contact, email)
+        self._points = points
+    
+    def earn_points(self, amount):
+        self._points += amount
+    
+    def redeem_points(self, amount):
+        if amount <= self._points:
+            self._points -= amount
+        else:
+            print("Not enough points to redeem.")
+    
+    def get_details(self):
+        return super().get_details() + f", Loyalty Points: {self._points}"
+
+
+class Room:
+    """Represents a hotel room."""
+    def __init__(self, room_number, room_type, amenities, price_per_night):
+        self._room_number = room_number
+        self._room_type = room_type
+        self._amenities = amenities
+        self._price_per_night = price_per_night
+        self._is_available = True
+    
+    def book_room(self):
+        if self._is_available:
+            self._is_available = False
+        else:
+            print("Room is already booked.")
+    
+    def release_room(self):
+        self._is_available = True
+    
+    def get_details(self):
+        return f"Room {self._room_number}: {self._room_type}, Price: ${self._price_per_night}/night, Available: {self._is_available}"
+    
+    def __str__(self):
+        return self.get_details()
+
+
+class Booking:
+    """Represents a room booking."""
+    def __init__(self, guest, room, check_in, check_out):
+        self._guest = guest  # Aggregation: A booking is associated with a guest
+        self._room = room  # Aggregation: A booking is associated with a room
+        self._check_in = check_in
+        self._check_out = check_out
+        self._invoice = None
+        self._guest.add_booking(self)
+        room.book_room()
+    
+    def generate_invoice(self):
+        total_days = (self._check_out - self._check_in).days
+        total_price = total_days * self._room._price_per_night
+        self._invoice = Invoice(self, total_price)
+    
+    def cancel_booking(self):
+        self._room.release_room()
+        print("Booking canceled and room is now available.")
+    
+    def get_details(self):
+        return f"Booking for {self._guest._name}, Room {self._room._room_number}, Check-in: {self._check_in}, Check-out: {self._check_out}"
+    
+    def __str__(self):
+        return self.get_details()
+
+
+class Invoice:
+    """Represents an invoice for a booking."""
+    def __init__(self, booking, total_amount):
+        self._booking = booking  # Aggregation: An invoice is tied to a booking
+        self._total_amount = total_amount
+    
+    def get_invoice_details(self):
+        return f"Invoice: {self._booking}, Total Amount: ${self._total_amount}"
+    
+    def __str__(self):
+        return self.get_invoice_details()
+
+
+class Payment:
+    """Handles payment processing."""
+    def __init__(self, booking, method, amount):
+        self._booking = booking  # Aggregation: Payment is linked to a booking
+        self._method = method
+        self._amount = amount
+        self._is_paid = False
+    
+    def process_payment(self):
+        if self._amount == self._booking._invoice._total_amount:
+            self._is_paid = True
+            print("Payment successful.")
+        else:
+            print("Incorrect payment amount.")
+    
+    def get_details(self):
+        return f"Payment for Booking: {self._booking}, Method: {self._method}, Amount: ${self._amount}, Paid: {self._is_paid}"
+    
+    def __str__(self):
+        return self.get_details()
